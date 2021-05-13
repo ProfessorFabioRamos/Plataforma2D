@@ -42,6 +42,14 @@ public class Player : MonoBehaviour
             rig.AddForce(new Vector2(0, jumpForce),ForceMode2D.Force);
         }
         anim.SetBool("grounded", grounded);
+
+        if(Input.GetKeyDown(KeyCode.X)){
+            Attack();
+        }
+    }
+
+    void Attack(){
+        anim.SetTrigger("attack");
     }
 
     void Flip(bool faceRight){
