@@ -5,19 +5,26 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     public float movementSpeed = 2;
+    public float enemyHP = 2;
     Rigidbody2D rig;
     SpriteRenderer spr;
+    Animator anim;
     // Start is called before the first frame update
     void Start()
     {
         rig = GetComponent<Rigidbody2D>();
         spr = GetComponent<SpriteRenderer>();
+        anim = GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        rig.velocity = new Vector2(movementSpeed, rig.velocity.y);
+        if(enemyHP > 0){
+            rig.velocity = new Vector2(movementSpeed, rig.velocity.y);
+        }else{
+            rig.velocity = Vector2.zero;
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other){
@@ -29,5 +36,16 @@ public class Enemy : MonoBehaviour
 
     void Flip(){
         spr.flipX = !spr.flipX;
+    }
+
+    public void TakeDamage(int damage){
+        enemyHP -= damage;
+        if(enemyHP <=0 ){
+            anim.SetTrigger("die");
+        }
+    }
+
+    public void DestroyEnemy(){
+        Destroy(gameObject);
     }
 }

@@ -6,6 +6,7 @@ public class Player : MonoBehaviour
 {
     //MOVIMENTACAO
     public float moveSpeed = 2.0f;
+    private float xOrientation = 1;
 
     //PULO
     public float jumpForce = 200;
@@ -13,10 +14,12 @@ public class Player : MonoBehaviour
     public float circleOverlapRadius = 0.2f;
     public LayerMask whatIsGround;
 
+    public BoxCollider2D attackArea;
     //COMPONENTES
     private Rigidbody2D rig;
     private Animator anim;
     private SpriteRenderer spr;
+    private Enemy enemyInArea = null;
 
     // Start is called before the first frame update
     void Start()
@@ -24,6 +27,7 @@ public class Player : MonoBehaviour
         rig = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         spr = GetComponent<SpriteRenderer>();
+        attackArea = GetComponent<BoxCollider2D>();
     }
 
     // Update is called once per frame
@@ -44,15 +48,37 @@ public class Player : MonoBehaviour
         anim.SetBool("grounded", grounded);
 
         if(Input.GetKeyDown(KeyCode.X)){
-            Attack();
+            AttackAnimation();
         }
     }
 
-    void Attack(){
+    void AttackAnimation(){
         anim.SetTrigger("attack");
+    }
+
+    public void DamageEnemy(){
+        if(enemyInArea != null && enemyInArea.enemyHP > 0){
+            enemyInArea.TakeDamage(1);
+        }
     }
 
     void Flip(bool faceRight){
         spr.flipX = !faceRight;
+
+        if(faceRight) xOrientation=1;
+        else xOrientation=-1;
+        attackArea.offset = new Vector2(xOrientation,attackArea.offset.y);
+    }
+
+    void OnTriggerStay2D(Collider2D other){
+        if(other.gameObject.layer == 7){
+            enemyInArea = other.GetComponent<Enemy>();
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other){
+        if(other.gameObject.layer == 7){
+            enemyInArea = null;
+        }
     }
 }
