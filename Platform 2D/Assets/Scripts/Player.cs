@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
@@ -13,8 +14,14 @@ public class Player : MonoBehaviour
     public Transform groundCheck;
     public float circleOverlapRadius = 0.2f;
     public LayerMask whatIsGround;
-
+    //ATAQUE
     public BoxCollider2D attackArea;
+    //HP
+    public float HP;
+    public float maxHP = 5;
+    public Slider hpBar;
+    private bool isAlive = true;
+    public Transform respawnPosition;
     //COMPONENTES
     private Rigidbody2D rig;
     private Animator anim;
@@ -28,28 +35,53 @@ public class Player : MonoBehaviour
         anim = GetComponent<Animator>();
         spr = GetComponent<SpriteRenderer>();
         attackArea = GetComponent<BoxCollider2D>();
+        hpBar.maxValue = maxHP;
+        hpBar.value = maxHP;
+        HP = maxHP;
     }
 
     // Update is called once per frame
     void Update()
     {
-        float h = Input.GetAxis("Horizontal");
-        rig.velocity = new Vector2(h*moveSpeed, rig.velocity.y);
-        anim.SetFloat("speed", Mathf.Abs(h));
+        if(isAlive){
+            float h = Input.GetAxis("Horizontal");
+            rig.velocity = new Vector2(h*moveSpeed, rig.velocity.y);
+            anim.SetFloat("speed", Mathf.Abs(h));
 
-        if(h > 0 ) Flip(true);
-        else if(h <0) Flip(false);
+            if(h > 0 ) Flip(true);
+            else if(h <0) Flip(false);
 
-        bool grounded = Physics2D.OverlapCircle(groundCheck.position, circleOverlapRadius, whatIsGround);
+            bool grounded = Physics2D.OverlapCircle(groundCheck.position, circleOverlapRadius, whatIsGround);
 
-        if(Input.GetButtonDown("Jump") && grounded){
-            rig.AddForce(new Vector2(0, jumpForce),ForceMode2D.Force);
+            if(Input.GetButtonDown("Jump") && grounded){
+                rig.AddForce(new Vector2(0, jumpForce),ForceMode2D.Force);
+            }
+            anim.SetBool("grounded", grounded);
+
+            if(Input.GetKeyDown(KeyCode.X)){
+                AttackAnimation();
+            }
+
+            hpBar.value = HP;
         }
-        anim.SetBool("grounded", grounded);
+    }
 
-        if(Input.GetKeyDown(KeyCode.X)){
-            AttackAnimation();
+    public void TakeDamage(int damage){
+        HP -= damage;
+        if(HP <=0 && isAlive){
+            anim.SetTrigger("dead");
+            isAlive = false;
+            GetComponent<CapsuleCollider2D>().enabled = false;
+            Invoke("Respawn", 2);
         }
+    }
+
+    void Respawn(){
+        isAlive = true;
+        transform.position = respawnPosition.position;
+        GetComponent<CapsuleCollider2D>().enabled = true;
+        HP = maxHP;
+        anim.SetTrigger("respawn");
     }
 
     void AttackAnimation(){
@@ -73,6 +105,13 @@ public class Player : MonoBehaviour
     void OnTriggerStay2D(Collider2D other){
         if(other.gameObject.layer == 7){
             enemyInArea = other.GetComponent<Enemy>();
+        }
+        if(other.gameObject.name == "HealingItem"){
+            HP+=1;
+            if(HP > maxHP){
+                HP = maxHP;
+            }
+            Destroy(other.gameObject);
         }
     }
 

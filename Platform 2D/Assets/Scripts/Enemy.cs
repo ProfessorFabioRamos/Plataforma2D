@@ -5,7 +5,8 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     public float movementSpeed = 2;
-    public float enemyHP = 2;
+    public int enemyHP = 2;
+    public int enemyDamage = 1;
     Rigidbody2D rig;
     SpriteRenderer spr;
     Animator anim;
@@ -31,6 +32,13 @@ public class Enemy : MonoBehaviour
         if(other.tag == "Limit"){
             movementSpeed *= -1;
             Flip();
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D other){
+        if(other.gameObject.tag == "Player"){
+            anim.SetTrigger("attack");
+            other.gameObject.GetComponent<Player>().TakeDamage(enemyDamage);
         }
     }
 
