@@ -36,7 +36,7 @@ public class Enemy : MonoBehaviour
     }
 
     void OnCollisionEnter2D(Collision2D other){
-        if(other.gameObject.tag == "Player"){
+        if(other.gameObject.tag == "Player" && enemyHP > 0){
             anim.SetTrigger("attack");
             other.gameObject.GetComponent<Player>().TakeDamage(enemyDamage);
         }
